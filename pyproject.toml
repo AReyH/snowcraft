@@ -1,0 +1,79 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "snowforge"
+version = "0.1.0"
+description = "A Python toolkit that wraps the most common, tedious Snowflake operations into clean, tested, pip-installable functions."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Arturo Rey", email = "areysworkemail@gmail.com" }]
+requires-python = ">=3.10"
+keywords = ["snowflake", "data-engineering", "etl", "merge", "scd"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+]
+dependencies = [
+    "snowflake-connector-python>=3.0,<4.0",
+    "sqlglot>=20.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-mock>=3.12",
+    "ruff>=0.3.0",
+    "mypy>=1.8",
+    "mkdocs>=1.5",
+    "mkdocstrings[python]>=0.24",
+    "mkdocs-material>=9.0",
+    "build>=1.0",
+    "twine>=5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/AReyH/snowforge"
+Repository = "https://github.com/AReyH/snowforge"
+Issues = "https://github.com/AReyH/snowforge/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["snowforge"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "N", "B", "W"]
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["snowforge"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short"
+
+[tool.coverage.run]
+source = ["snowforge"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
