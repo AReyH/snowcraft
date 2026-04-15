@@ -12,9 +12,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 
-from snowcraft.connection import SnowforgeConnection
+from snowcraft.connection import SnowcraftConnection
 from snowcraft.exceptions import ProfilerError
 
 # Default USD cost per credit. Enterprise vs. Business Critical pricing differs;
@@ -79,7 +79,7 @@ class CostSummary:
 # ---------------------------------------------------------------------------
 
 
-def _generate_hints(row: dict[str, object]) -> list[str]:
+def _generate_hints(row: dict[str, Any]) -> list[str]:
     """Produce a list of optimization hints from a QUERY_HISTORY row dict.
 
     Args:
@@ -226,7 +226,7 @@ ORDER BY 2 DESC
 # ---------------------------------------------------------------------------
 
 
-def _row_to_query_summary(row: tuple[object, ...]) -> QuerySummary:
+def _row_to_query_summary(row: tuple[Any, ...]) -> QuerySummary:
     """Convert a raw QUERY_HISTORY result row into a ``QuerySummary``."""
     (
         query_id,
@@ -290,7 +290,7 @@ class QueryProfiler:
     ``SNOWFLAKE`` database.
 
     Args:
-        conn: An open ``SnowforgeConnection``.
+        conn: An open ``SnowcraftConnection``.
 
     Example:
         profiler = QueryProfiler(conn)
@@ -299,7 +299,7 @@ class QueryProfiler:
             print(q.query_id, q.execution_time_ms, q.optimization_hints)
     """
 
-    def __init__(self, conn: SnowforgeConnection) -> None:
+    def __init__(self, conn: SnowcraftConnection) -> None:
         self._conn = conn
 
     def top_expensive(
@@ -335,7 +335,7 @@ class QueryProfiler:
 
         try:
             cur = self._conn.execute(sql, tuple(params))
-            rows = cur.fetchall()
+            rows: list[tuple[Any, ...]] = [tuple(r) for r in cur.fetchall()]
         except Exception as exc:
             raise ProfilerError(
                 f"Failed to query QUERY_HISTORY (check that your role has access "
@@ -371,11 +371,11 @@ class QueryProfiler:
 
         try:
             cur = self._conn.execute(sql, params)
-            rows = cur.fetchall()
+            rows_fs: list[tuple[Any, ...]] = [tuple(r) for r in cur.fetchall()]
         except Exception as exc:
             raise ProfilerError(f"Failed to query QUERY_HISTORY for full scans: {exc}") from exc
 
-        return [_row_to_query_summary(row) for row in rows]
+        return [_row_to_query_summary(row) for row in rows_fs]
 
     def warehouse_cost(
         self,

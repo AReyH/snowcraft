@@ -8,8 +8,9 @@ classifies changes as breaking or non-breaking.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
-from snowcraft.connection import SnowforgeConnection
+from snowcraft.connection import SnowcraftConnection
 from snowcraft.exceptions import SchemaError
 
 
@@ -234,7 +235,7 @@ def _parse_table_ref(table: str) -> tuple[str, str, str]:
     return parts[0], parts[1], parts[2]
 
 
-def _build_column_def(row: tuple[object, ...]) -> ColumnDef:
+def _build_column_def(row: tuple[Any, ...]) -> ColumnDef:
     """Construct a ``ColumnDef`` from an ``INFORMATION_SCHEMA.COLUMNS`` row."""
     (
         col_name,
@@ -277,7 +278,7 @@ class SchemaInspector:
     consistent privilege requirements and stable result formats.
 
     Args:
-        conn: An open ``SnowforgeConnection``.
+        conn: An open ``SnowcraftConnection``.
 
     Example:
         inspector = SchemaInspector(conn)
@@ -286,7 +287,7 @@ class SchemaInspector:
         print(diff.to_markdown())
     """
 
-    def __init__(self, conn: SnowforgeConnection) -> None:
+    def __init__(self, conn: SnowcraftConnection) -> None:
         self._conn = conn
 
     def get_columns(self, table: str) -> list[ColumnDef]:
@@ -305,7 +306,7 @@ class SchemaInspector:
         query = _COLUMNS_QUERY.format(database=database)
         try:
             cur = self._conn.execute(query, (database, schema, table_name))
-            rows = cur.fetchall()
+            rows: list[tuple[Any, ...]] = [tuple(r) for r in cur.fetchall()]
         except Exception as exc:
             raise SchemaError(f"Failed to fetch column metadata for '{table}': {exc}") from exc
 
